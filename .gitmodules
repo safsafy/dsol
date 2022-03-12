@@ -15,3 +15,6 @@
 [submodule "packages/third-party/openvslam/Packages/pangolin"]
 	path = packages/third-party/openvslam/Packages/pangolin
 	url = git@github.com:cov-lineages/pangolin.git
+[submodule "packages/third-party/orbslam3/ORB_SLAM3"]
+	path = packages/third-party/orbslam3/ORB_SLAM3
+	url = git@github.com:UZ-SLAMLab/ORB_SLAM3.git
