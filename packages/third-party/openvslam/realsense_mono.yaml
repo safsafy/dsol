@@ -1,0 +1,81 @@
+# realsense camera1/infra1, comes from 20211123_111455_archive bag
+
+#==============#
+# Camera Model #
+#==============#
+
+Camera:
+  name: "Realsense Monocular"
+  setup: "monocular"
+  model: "perspective"
+
+  fx: 422.7419128417969
+  fy: 422.7419128417969
+  cx: 429.5812683105469
+  cy: 236.92489624023438
+  
+  k1: 0.0
+  k2: 0.0
+  p1: 0.0
+  p2: 0.0
+  k3: 0.0
+
+  fps: 6.0
+  cols: 848
+  rows: 480
+
+  color_order: "Gray"
+
+#=====================#
+# Tracking Parameters #
+#=====================#
+
+Preprocessing:
+  max_num_keypoints: 2000
+  ini_max_num_keypoints: 4000
+
+#================#
+# ORB Parameters #
+#================#
+
+Feature:
+  name: "default ORB feature extraction setting"
+  scale_factor: 1.2
+  num_levels: 8
+  ini_fast_threshold: 20
+  min_fast_threshold: 7
+
+#====================#
+# Mapping Parameters #
+#====================#
+
+Mapping:
+  baseline_dist_thr_ratio: 0.02
+  redundant_obs_ratio_thr: 0.9
+
+
+#=================#
+# SocketPublisher #
+#=================#
+
+    #SocketPublisher:
+    #emitting_interval:
+    #image_qualiy:
+    #server_uri:
+    #publish_points: False
+
+#===========================#
+# PangolinViewer Parameters #
+#===========================#
+
+PangolinViewer:
+    keyframe_size: 0.06
+    keyframe_line_width: 1
+    graph_line_width: 1
+    point_size: 2
+    camera_size: 0.07
+    camera_line_width: 2
+    viewpoint_x: 0
+    viewpoint_y: -20
+    viewpoint_z: -0.1
+    viewpoint_f: 2800

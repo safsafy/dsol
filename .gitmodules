@@ -1,0 +1,17 @@
+[submodule "packages/third-party/openvslam/openvslam_ros"]
+	path = packages/third-party/openvslam/openvslam_ros
+	url = git@github.com:OpenVSLAM-Community/openvslam_ros.git
+	branch = ros
+[submodule "packages/third-party/openvslam/Packages/eigen"]
+	path = packages/third-party/openvslam/Packages/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.3.7
+[submodule "packages/third-party/openvslam/Packages/fbow"]
+	path = packages/third-party/openvslam/Packages/fbow
+	url = git@github.com:rmsalinas/fbow.git
+[submodule "packages/third-party/openvslam/Packages/g2o"]
+	path = packages/third-party/openvslam/Packages/g2o
+	url = git@github.com:RainerKuemmerle/g2o.git
+[submodule "packages/third-party/openvslam/Packages/pangolin"]
+	path = packages/third-party/openvslam/Packages/pangolin
+	url = git@github.com:cov-lineages/pangolin.git
