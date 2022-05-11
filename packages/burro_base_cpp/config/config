@@ -1,0 +1,16 @@
+
+# PID
+^KP 1 10_
+^KI 1 13_
+^KD 1 0_
+^KP 2 10_
+^KI 2 13_
+^KD 2 0_
+
+# IO
+^PINA 1 0_
+^PINA 2 0_
+^PMOD 1 0_
+^PMOD 2 0_
+^MDEC 1 40000_
+^MDEC 2 40000_
