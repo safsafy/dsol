@@ -14,6 +14,7 @@
 #include "sv/dsol/node_util.h"
 #include "sv/dsol/odom.h"
 #include "sv/ros1/msg_conv.h"
+#include "sv/util/logging.h"
 
 namespace sv::dsol {
 
@@ -133,7 +134,6 @@ void NodeOdom::GyrCb(const sensor_msgs::Imu& gyr_msg) {
   // Normally there is a transform from imu to camera, but in realsense, imu and
   // left infrared camera are aligned (only small translation, so we skip
   // reading the tf)
-
   gyrs_.push_back(gyr_msg);
 }
 
@@ -224,8 +224,8 @@ void NodeOdom::StereoDepthCb(const sensor_msgs::ImageConstPtr& image0_ptr,
 void NodeOdom::PublishOdom(const std_msgs::Header& header,
                            const Sophus::SE3d& tf) {
   // Publish odom poses
-  const auto pose_msg = pub_odom_.Publish(header.stamp, tf);
-
+  //const auto pose_msg = pub_odom_.Publish(header.stamp, tf);
+  const auto pose_msg = pub_odom_.Publish(ros::Time::now(), tf);
   // Publish keyframe poses
   const auto poses = odom_.window.GetAllPoses();
   gm::PoseArray parray_msg;
