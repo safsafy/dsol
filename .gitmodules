@@ -18,3 +18,6 @@
 [submodule "packages/third-party/orbslam3/ORB_SLAM3"]
 	path = packages/third-party/orbslam3/ORB_SLAM3
 	url = git@github.com:UZ-SLAMLab/ORB_SLAM3.git
+[submodule "packages/third-party/dsol/dsol"]
+	path = packages/third-party/dsol/dsol
+	url = https://github.com/versatran01/dsol
