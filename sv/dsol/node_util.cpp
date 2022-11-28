@@ -3,6 +3,7 @@
 #include "sv/ros1/msg_conv.h"
 #include "sv/util/logging.h"
 
+
 namespace sv::dsol {
 
 namespace gm = geometry_msgs;
@@ -178,6 +179,49 @@ void DrawAlignGraph(const Eigen::Vector3d& frame_pos,
     marker.points.push_back(p1);
   }
 }
+
+bool TfGetTransform(tf::TransformListener& tf_listener,
+                    const std::string & from_frame_id,
+                    const std::string & to_frame_id,
+                    const ros::Time & stamp,
+                    tf::StampedTransform & transform,
+                    double wait)
+{
+    try
+    {
+        if(!stamp.isZero() || wait > 0.0)
+        {
+            std::string errorMsg;
+            if(!tf_listener.waitForTransform(from_frame_id, to_frame_id, stamp, ros::Duration(wait), ros::Duration(0.01), &errorMsg))
+            {
+                ROS_WARN("%s: Could not get transform from %s to %s (stamp=%f) after %f seconds "
+                         "(\"wait_for_transform_duration\"=%f)! Error=\"%s\"",
+                         ros::this_node::getName().c_str(),
+                         from_frame_id.c_str(),
+                         to_frame_id.c_str(),
+                         stamp.toSec(),
+                         wait,
+                         wait,
+                         errorMsg.c_str());
+
+                return false;
+            }
+            else
+            {
+                tf_listener.lookupTransform(from_frame_id, to_frame_id, stamp, transform);
+                return true;
+            }
+        }
+        return false;
+
+    }
+    catch(tf::TransformException & ex)
+    {
+        ROS_WARN( "%s",ex.what());
+        return false;
+    }
+}
+
 
 PosePathPublisher::PosePathPublisher(ros::NodeHandle pnh,
                                      const std::string& name,

@@ -44,6 +44,8 @@ struct NodeOdom {
 
   void PublishOdom(const std_msgs::Header& header, const Sophus::SE3d& tf);
   void PublishCloud(const std_msgs::Header& header);
+  bool GetCameraBaselinkTrans();
+
 
   using SyncStereo = mf::TimeSynchronizer<sm::Image, sm::Image>;
   using SyncStereoDepth = mf::TimeSynchronizer<sm::Image, sm::Image, sm::Image>;
@@ -65,12 +67,17 @@ struct NodeOdom {
   ros::Publisher pub_points_;
   ros::Publisher pub_parray_;
   PosePathPublisher pub_odom_;
+  tf::TransformListener tf_listener;
 
   MotionModel motion_;
   DirectOdometry odom_;
 
   std::string frame_{"fixed"};
   sm::PointCloud2 cloud_;
+  std::string camera_frame_{"camera"};
+  std::string odom_frame_{"odom"};
+  std::string baselink_frame_{"base_link"};
+  tf::StampedTransform camera_baselink_tf_;
 };
 
 NodeOdom::NodeOdom(const ros::NodeHandle& pnh)
@@ -97,6 +104,9 @@ void NodeOdom::InitOdom() {
   odom_.adjuster = BundleAdjuster(ReadDirectCfg({pnh_, "adjust"}));
   odom_.cmap = GetColorMap(pnh_.param<std::string>("cm", "jet"));
   ROS_INFO_STREAM(odom_.Repr());
+
+  //get the odom frame name
+  pnh_.getParam("odom_frame", odom_frame_);
 
   // Init motion model
   motion_.Init();
@@ -125,8 +135,33 @@ void NodeOdom::InitRosIO() {
 void NodeOdom::Cinfo1Cb(const sensor_msgs::CameraInfo& cinfo1_msg) {
   odom_.camera = MakeCamera(cinfo1_msg);
   ROS_INFO_STREAM(odom_.camera.Repr());
-  sub_cinfo1_.shutdown();
+  camera_frame_ = cinfo1_msg.header.frame_id;
+
+  if (GetCameraBaselinkTrans())
+  {
+    sub_cinfo1_.shutdown();  
+  }
+
 }
+
+bool NodeOdom::GetCameraBaselinkTrans()
+{
+
+  if (TfGetTransform(tf_listener,
+                     camera_frame_,
+                     baselink_frame_,
+                     ros::Time(0),
+                     camera_baselink_tf_,
+                     3.0))
+  {
+    return true;
+  }
+  
+  ROS_WARN("%s{} to baselink transformation is not broadcasted", camera_frame_);
+  return false;
+
+}
+
 
 void NodeOdom::AccCb(const sensor_msgs::Imu& acc_msg) {}
 
@@ -224,8 +259,7 @@ void NodeOdom::StereoDepthCb(const sensor_msgs::ImageConstPtr& image0_ptr,
 void NodeOdom::PublishOdom(const std_msgs::Header& header,
                            const Sophus::SE3d& tf) {
   // Publish odom poses
-  //const auto pose_msg = pub_odom_.Publish(header.stamp, tf);
-  const auto pose_msg = pub_odom_.Publish(ros::Time::now(), tf);
+  const auto pose_msg = pub_odom_.Publish(header.stamp, tf);
   // Publish keyframe poses
   const auto poses = odom_.window.GetAllPoses();
   gm::PoseArray parray_msg;
@@ -236,6 +270,7 @@ void NodeOdom::PublishOdom(const std_msgs::Header& header,
   }
   pub_parray_.publish(parray_msg);
 }
+
 
 void NodeOdom::PublishCloud(const std_msgs::Header& header) {
   if (pub_points_.getNumSubscribers() == 0) return;

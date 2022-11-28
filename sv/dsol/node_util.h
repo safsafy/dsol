@@ -12,6 +12,8 @@
 #include "sv/dsol/select.h"
 #include "sv/dsol/stereo.h"
 
+#include <tf/transform_listener.h>
+
 namespace sv::dsol {
 
 SelectCfg ReadSelectCfg(const ros::NodeHandle& pnh);
@@ -35,6 +37,13 @@ void DrawAlignGraph(const Eigen::Vector3d& frame_pos,
                     const cv::Scalar& color,
                     double scale,
                     visualization_msgs::Marker& marker);
+
+bool TfGetTransform(tf::TransformListener& tf_listener,
+                                    const std::string & from_frame_id,
+                                    const std::string & to_frame_id,
+                                    const ros::Time & stamp,
+                                    tf::StampedTransform & transform,
+                                    double wait = 0.2); 
 
 /// @brief Publish pose and also add it to path
 struct PosePathPublisher {

@@ -46,3 +46,6 @@ adjust:
   max_outliers: 0
   grad_factor: 1.5
   min_depth: 0.1
+frames:
+  odom: "odom"
+  baselink: "base_link"
