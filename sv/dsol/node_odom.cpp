@@ -77,6 +77,7 @@ struct NodeOdom {
   std::string camera_frame_{"camera"};
   std::string odom_frame_{"odom"};
   std::string baselink_frame_{"base_link"};
+  Sophus::SO3d camera_baselink_;
   tf::StampedTransform camera_baselink_tf_;
 };
 
@@ -154,6 +155,7 @@ bool NodeOdom::GetCameraBaselinkTrans()
                      camera_baselink_tf_,
                      3.0))
   {
+    Ros2Sophus(camera_baselink_tf_, camera_baselink_);
     return true;
   }
   
