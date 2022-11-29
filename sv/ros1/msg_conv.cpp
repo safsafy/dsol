@@ -36,6 +36,12 @@ void Ros2Eigen(const gm::Vector3& r, Eigen::Ref<Eigen::Vector3d> e) {
   e.z() = r.z;
 }
 
+void Ros2Eigen(const tf::Vector3& r, Eigen::Ref<Eigen::Vector3d> e) {
+  e.x() = r.getX();
+  e.y() = r.getY();
+  e.z() = r.getZ();
+}
+
 void Eigen2Ros(const Eigen::Quaterniond& e, gm::Quaternion& r) {
   r.w = e.w();
   r.x = e.x();
@@ -115,11 +121,14 @@ void Ros2Sophus(const gm::Pose& pose, Sophus::SE3d& se3) {
   Ros2Eigen(pose.position, se3.translation());
 }
 
-void Ros2Sophus(const tf::StampedTransform& tf, Sophus::SO3d& so3){
+void Ros2Sophus(const tf::StampedTransform& tf, Sophus::SE3d& se3){
   Eigen::Quaterniond q;
   Ros2Eigen(tf.getRotation(), q);
-  so3.setQuaternion(q);
+  se3.so3().setQuaternion(q);
+  Ros2Eigen(tf.getOrigin(), se3.translation());
 }
+
+
 
 
 /// @brief Get size of datatype from PointFiled

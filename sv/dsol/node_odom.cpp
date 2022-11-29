@@ -45,6 +45,7 @@ struct NodeOdom {
   void PublishOdom(const std_msgs::Header& header, const Sophus::SE3d& tf);
   void PublishCloud(const std_msgs::Header& header);
   bool GetCameraBaselinkTrans();
+  void PublishBaseLinkOdom(const std_msgs::Header& header, const Sophus::SE3d& tf);
 
 
   using SyncStereo = mf::TimeSynchronizer<sm::Image, sm::Image>;
@@ -67,6 +68,7 @@ struct NodeOdom {
   ros::Publisher pub_points_;
   ros::Publisher pub_parray_;
   PosePathPublisher pub_odom_;
+  PosePathPublisher pub_baselink_odom_;
   tf::TransformListener tf_listener;
 
   MotionModel motion_;
@@ -77,8 +79,7 @@ struct NodeOdom {
   std::string camera_frame_{"camera"};
   std::string odom_frame_{"odom"};
   std::string baselink_frame_{"base_link"};
-  Sophus::SO3d camera_baselink_;
-  tf::StampedTransform camera_baselink_tf_;
+  Sophus::SE3d camera_baselink_;
 };
 
 NodeOdom::NodeOdom(const ros::NodeHandle& pnh)
@@ -129,6 +130,7 @@ void NodeOdom::InitRosIO() {
   // sub_acc_ = pnh_.subscribe("acc", 100, &NodeOdom::AccCb, this);
 
   pub_odom_ = PosePathPublisher(pnh_, "odom", frame_);
+  pub_baselink_odom_ = PosePathPublisher(pnh_, "baselink/odom", odom_frame_);
   pub_points_ = pnh_.advertise<sm::PointCloud2>("points", 1);
   pub_parray_ = pnh_.advertise<gm::PoseArray>("parray", 1);
 }
@@ -147,15 +149,16 @@ void NodeOdom::Cinfo1Cb(const sensor_msgs::CameraInfo& cinfo1_msg) {
 
 bool NodeOdom::GetCameraBaselinkTrans()
 {
+  tf::StampedTransform camera_baselink_tf;
 
   if (TfGetTransform(tf_listener,
+                     odom_frame_,
                      camera_frame_,
-                     baselink_frame_,
                      ros::Time(0),
-                     camera_baselink_tf_,
+                     camera_baselink_tf,
                      3.0))
   {
-    Ros2Sophus(camera_baselink_tf_, camera_baselink_);
+    Ros2Sophus(camera_baselink_tf, camera_baselink_);
     return true;
   }
   
@@ -251,6 +254,7 @@ void NodeOdom::StereoDepthCb(const sensor_msgs::ImageConstPtr& image0_ptr,
   header.stamp = curr_header.stamp;
 
   PublishOdom(header, status.Twc());
+  PublishBaseLinkOdom(header, status.Twc());
   if (status.map.remove_kf) {
     PublishCloud(header);
   }
@@ -271,6 +275,20 @@ void NodeOdom::PublishOdom(const std_msgs::Header& header,
     Sophus2Ros(poses.at(i), parray_msg.poses.at(i));
   }
   pub_parray_.publish(parray_msg);
+}
+
+void NodeOdom::PublishBaseLinkOdom(const std_msgs::Header& header,
+                                   const Sophus::SE3d& tf) {
+
+  Sophus::SE3d baselink_pose = camera_baselink_ * tf;
+  std::cout<< "camera_baselink_" <<std::endl;
+  std::cout << camera_baselink_.matrix() << std::endl;
+  std::cout << "tf" << std::endl;
+  std::cout << tf.matrix() << std::endl;
+  std::cout << "baselink_pose" << std::endl;
+  std::cout << baselink_pose.matrix() << std::endl; 
+  pub_baselink_odom_.Publish(header.stamp, baselink_pose);
+
 }
 
 
