@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/Imu.h>
+#include <nav_msgs/Odometry.h>
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <boost/circular_buffer.hpp>
@@ -22,6 +23,7 @@ namespace cb = cv_bridge;
 namespace sm = sensor_msgs;
 namespace gm = geometry_msgs;
 namespace mf = message_filters;
+namespace nm = nav_msgs;
 
 struct NodeOdom {
   explicit NodeOdom(const ros::NodeHandle& pnh);
@@ -79,7 +81,7 @@ struct NodeOdom {
   std::string camera_frame_{"camera"};
   std::string odom_frame_{"odom"};
   std::string baselink_frame_{"base_link"};
-  Sophus::SE3d camera_baselink_;
+  Sophus::SE3d camera_world_;
 };
 
 NodeOdom::NodeOdom(const ros::NodeHandle& pnh)
@@ -130,7 +132,7 @@ void NodeOdom::InitRosIO() {
   // sub_acc_ = pnh_.subscribe("acc", 100, &NodeOdom::AccCb, this);
 
   pub_odom_ = PosePathPublisher(pnh_, "odom", frame_);
-  pub_baselink_odom_ = PosePathPublisher(pnh_, "baselink/odom", odom_frame_);
+  pub_baselink_odom_ = PosePathPublisher(pnh_, "baselink", odom_frame_);
   pub_points_ = pnh_.advertise<sm::PointCloud2>("points", 1);
   pub_parray_ = pnh_.advertise<gm::PoseArray>("parray", 1);
 }
@@ -149,16 +151,16 @@ void NodeOdom::Cinfo1Cb(const sensor_msgs::CameraInfo& cinfo1_msg) {
 
 bool NodeOdom::GetCameraBaselinkTrans()
 {
-  tf::StampedTransform camera_baselink_tf;
+  tf::StampedTransform camera_world_tf;
 
   if (TfGetTransform(tf_listener,
                      odom_frame_,
                      camera_frame_,
                      ros::Time(0),
-                     camera_baselink_tf,
+                     camera_world_tf,
                      3.0))
   {
-    Ros2Sophus(camera_baselink_tf, camera_baselink_);
+    Ros2Sophus(camera_world_tf, camera_world_);
     return true;
   }
   
@@ -280,13 +282,7 @@ void NodeOdom::PublishOdom(const std_msgs::Header& header,
 void NodeOdom::PublishBaseLinkOdom(const std_msgs::Header& header,
                                    const Sophus::SE3d& tf) {
 
-  Sophus::SE3d baselink_pose = camera_baselink_ * tf;
-  std::cout<< "camera_baselink_" <<std::endl;
-  std::cout << camera_baselink_.matrix() << std::endl;
-  std::cout << "tf" << std::endl;
-  std::cout << tf.matrix() << std::endl;
-  std::cout << "baselink_pose" << std::endl;
-  std::cout << baselink_pose.matrix() << std::endl; 
+  Sophus::SE3d baselink_pose = camera_world_* tf * camera_world_.inverse();
   pub_baselink_odom_.Publish(header.stamp, baselink_pose);
 
 }

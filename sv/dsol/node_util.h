@@ -2,6 +2,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/Odometry.h>
 #include <ros/node_handle.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -58,6 +59,7 @@ struct PosePathPublisher {
   std::string frame_id_;
   ros::Publisher pose_pub_;
   ros::Publisher path_pub_;
+  ros::Publisher odom_pub_;
   nav_msgs::Path path_msg_;
 };
 

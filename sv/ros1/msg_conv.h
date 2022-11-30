@@ -4,6 +4,7 @@
 #include <geometry_msgs/Transform.h>
 #include <tf/transform_datatypes.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <nav_msgs/Odometry.h>
 
 #include <opencv2/core/core.hpp>
 #include <sophus/se3.hpp>

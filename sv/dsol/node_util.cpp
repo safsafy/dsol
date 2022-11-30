@@ -8,6 +8,7 @@ namespace sv::dsol {
 
 namespace gm = geometry_msgs;
 namespace vm = visualization_msgs;
+namespace nm = nav_msgs;
 static constexpr auto kNaNF = std::numeric_limits<float>::quiet_NaN();
 
 SelectCfg ReadSelectCfg(const ros::NodeHandle& pnh) {
@@ -228,7 +229,8 @@ PosePathPublisher::PosePathPublisher(ros::NodeHandle pnh,
                                      const std::string& frame_id)
     : frame_id_{frame_id},
       pose_pub_{pnh.advertise<gm::PoseStamped>("pose_" + name, 1)},
-      path_pub_{pnh.advertise<nav_msgs::Path>("path_" + name, 1)} {
+      path_pub_{pnh.advertise<nav_msgs::Path>("path_" + name, 1)},
+      odom_pub_{pnh.advertise<nav_msgs::Odometry>("odom_" + name, 1)} {
   path_msg_.poses.reserve(1024);
 }
 
@@ -243,6 +245,12 @@ gm::PoseStamped PosePathPublisher::Publish(const ros::Time& time,
   path_msg_.header = pose_msg.header;
   path_msg_.poses.push_back(pose_msg);
   path_pub_.publish(path_msg_);
+
+  nm::Odometry odom_msg;
+  odom_msg.header = pose_msg.header;
+  odom_msg.pose.pose = pose_msg.pose;
+  odom_pub_.publish(odom_msg);
+
   return pose_msg;
 }
 
